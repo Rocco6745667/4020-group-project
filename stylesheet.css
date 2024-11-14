@@ -85,3 +85,24 @@ main {
     padding: 20px;
   }
 }
+
+.profile {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 20px 0 auto; /* No auto centering */
+  padding: 30px;
+  text-align: left; /* Aligns text to the left */
+}
+
+.profile h2 {
+  font-size: 2em;
+  margin-bottom: 15px;
+}
+
+.profile p {
+  font-size: 1.1em;
+  color: #555;
+  line-height: 1.8;
+}
