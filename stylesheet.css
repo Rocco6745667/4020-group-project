@@ -125,4 +125,12 @@ main {
   font-size: 1.1em;
   color: #555;
   line-height: 1.8;
+  text-align: left;
+}
+
+.GPT ul {
+  font-size: 1em;
+  color: #555;
+  line-height: 1.8;
+  text-align: left;
 }
