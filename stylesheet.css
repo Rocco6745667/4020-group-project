@@ -134,3 +134,32 @@ main {
   line-height: 1.8;
   text-align: left;
 }
+
+footer {
+  background-color: #4caf50;
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+  margin-top: 40px;
+}
+
+.footer-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.footer-nav {
+  margin-top: 10px;
+}
+
+.footer-nav a {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+  transition: color 0.3s ease;
+}
+
+.footer-nav a:hover {
+  color: #ffeb3b;
+}
