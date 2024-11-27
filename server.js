@@ -9,7 +9,7 @@ app.use(express.json());
 
 // Connect to MongoDB
 const mongoURI =
-  "mongodb+srv://<username>:<password>@cluster.mongodb.net/<dbname>?retryWrites=true&w=majority"; // Replace with your connection string
+  "mongodb+srv://abmbz13:estarossa@cluster0.duuc1.mongodb.net/ChatGPT_Evaluation?retryWrites=true&w=majority"; // Replace with your connection string
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("Connected to MongoDB"))
