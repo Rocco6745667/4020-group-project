@@ -9,7 +9,7 @@ app.use(express.json());
 
 // Connect to MongoDB
 const mongoURI =
-  "mongodb+srv://abmbz13:estarossa@cluster0.duuc1.mongodb.net/ChatGPT_Evaluation?retryWrites=true&w=majority"; // Replace with your connection string
+  "mongodb+srv://<username>:<password>@cluster.mongodb.net/<dbname>?retryWrites=true&w=majority"; // Replace with your connection string
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("Connected to MongoDB"))
@@ -180,3 +180,37 @@ async function fetchChartData() {
 
 // Fetch data and render charts on page load
 document.addEventListener("DOMContentLoaded", fetchChartData);
+
+// Define a Mongoose schema for questions
+const QuestionSchema = new mongoose.Schema({
+  questionText: String,
+  category: String,
+  difficulty: String,
+});
+
+const Question = mongoose.model("Question", QuestionSchema);
+
+// API to fetch a random question
+app.get("/api/random-question", async (req, res) => {
+  try {
+    const count = await Question.countDocuments(); // Get total number of questions
+    const randomIndex = Math.floor(Math.random() * count); // Pick a random index
+    const question = await Question.findOne().skip(randomIndex); // Skip to that index
+    res.json(question);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to retrieve question" });
+  }
+});
+
+// API to fetch a sequential question
+let currentQuestionIndex = 0;
+app.get("/api/sequential-question", async (req, res) => {
+  try {
+    const count = await Question.countDocuments(); // Get total number of questions
+    const question = await Question.findOne().skip(currentQuestionIndex); // Skip to the current index
+    currentQuestionIndex = (currentQuestionIndex + 1) % count; // Move to the next question
+    res.json(question);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to retrieve question" });
+  }
+});
