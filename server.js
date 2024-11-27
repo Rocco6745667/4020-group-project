@@ -9,20 +9,26 @@ app.use(express.json());
 
 // Connect to MongoDB
 const mongoURI =
-  "mongodb+srv://<username>:<password>@cluster.mongodb.net/<dbname>?retryWrites=true&w=majority"; // Replace with your connection string
+  "mongodb+srv://abmbz13:estarossa@cluster0.duuc1.mongodb.net/ChatGPT_Evaluation?retryWrites=true&w=majority"; // Replace with your connection string
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Failed to connect to MongoDB:", err));
 
 // Define a Mongoose schema and model for demonstration
-const ExampleSchema = new mongoose.Schema({
-  name: String,
-  age: Number,
-  email: String,
+const QuestionSchema = new mongoose.Schema({
+  question: String,
+  options: {
+    A: String,
+    B: String,
+    C: String,
+    D: String,
+  },
+  correctAnswer: String,
+  chatGPTResponse: { type: String, default: "" },
 });
 
-const Example = mongoose.model("Example", ExampleSchema);
+const Question = mongoose.model("Question", QuestionSchema);
 
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, "public")));
@@ -53,12 +59,27 @@ app.post("/api/add", async (req, res) => {
   }
 });
 
-app.get("/api/examples", async (req, res) => {
+app.get("/api/chart-data", async (req, res) => {
   try {
-    const examples = await Example.find();
-    res.status(200).json(examples);
+    const collections = ["Computer_Security", "History", "Social_Science"];
+    const stats = {};
+
+    for (const collectionName of collections) {
+      const collection = mongoose.connection.collection(collectionName);
+      const total = await collection.countDocuments();
+      const correct = await collection.countDocuments({ correctAnswer: { $exists: true, $ne: "" }, chatGPTResponse: { $eq: correctAnswer } });
+      const unanswered = await collection.countDocuments({ chatGPTResponse: { $eq: "" } });
+      stats[collectionName] = {
+        total,
+        correct,
+        accuracy: ((correct / total) * 100).toFixed(2),
+        unanswered,
+      };
+    }
+
+    res.json(stats);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch data" });
+    res.status(500).json({ error: "Failed to fetch chart data" });
   }
 });
 
@@ -79,25 +100,21 @@ async function fetchChartData() {
     const data = await response.json();
 
     // Extract data for charts
-    const months = data.map((item) => item.month);
-    const usageHours = data.map((item) => item.usageHours);
-    const performanceScores = data.map((item) => item.performanceScore);
-    const activityBreakdown = data.map((item) => item.activityBreakdown);
-
-    const training = activityBreakdown.map((item) => item.training);
-    const testing = activityBreakdown.map((item) => item.testing);
-    const idle = activityBreakdown.map((item) => item.idle);
+    const collections = Object.keys(data);
+    const totalCounts = collections.map((collection) => data[collection].total);
+    const accuracyRates = collections.map((collection) => data[collection].accuracy);
+    const unansweredCounts = collections.map((collection) => data[collection].unanswered);
 
     // Create Chart 1: Bar Chart for Monthly Usage
     const ctx1 = document.getElementById("chart1").getContext("2d");
     new Chart(ctx1, {
       type: "bar",
       data: {
-        labels: months,
+        labels: collections,
         datasets: [
           {
-            label: "Monthly Usage (hrs)",
-            data: usageHours,
+            label: "Total Questions",
+            data: totalCounts,
             backgroundColor: "rgba(75, 192, 192, 0.2)",
             borderColor: "rgba(75, 192, 192, 1)",
             borderWidth: 1,
@@ -108,7 +125,7 @@ async function fetchChartData() {
         responsive: true,
         plugins: {
           legend: { position: "top" },
-          title: { display: true, text: "Monthly Usage" },
+          title: { display: true, text: "Total Questions by Category" },
         },
       },
     });
@@ -118,11 +135,11 @@ async function fetchChartData() {
     new Chart(ctx2, {
       type: "line",
       data: {
-        labels: months,
+        labels: collections,
         datasets: [
           {
-            label: "Performance Score",
-            data: performanceScores,
+            label: "Accuracy Rate (%)",
+            data: accuracyRates,
             borderColor: "rgba(255, 99, 132, 1)",
             tension: 0.4,
             fill: false,
@@ -133,7 +150,7 @@ async function fetchChartData() {
         responsive: true,
         plugins: {
           legend: { position: "top" },
-          title: { display: true, text: "Performance Trends" },
+          title: { display: true, text: "Accuracy Rate by Category" },
         },
       },
     });
@@ -143,14 +160,10 @@ async function fetchChartData() {
     new Chart(ctx3, {
       type: "pie",
       data: {
-        labels: ["Training", "Testing", "Idle"],
+        labels: collections,
         datasets: [
           {
-            data: [
-              training.reduce((a, b) => a + b, 0),
-              testing.reduce((a, b) => a + b, 0),
-              idle.reduce((a, b) => a + b, 0),
-            ],
+            data: unansweredCounts,
             backgroundColor: [
               "rgba(255, 206, 86, 0.2)",
               "rgba(54, 162, 235, 0.2)",
@@ -169,7 +182,7 @@ async function fetchChartData() {
         responsive: true,
         plugins: {
           legend: { position: "top" },
-          title: { display: true, text: "Activity Breakdown" },
+          title: { display: true, text: "Unanswered Questions by Category" },
         },
       },
     });
@@ -177,6 +190,7 @@ async function fetchChartData() {
     console.error("Failed to fetch chart data:", error);
   }
 }
+
 
 // Fetch data and render charts on page load
 document.addEventListener("DOMContentLoaded", fetchChartData);
