@@ -93,102 +93,83 @@
             const data = await response.json();
 
             // Extract data for charts
-            const months = data.map((item) => item.month);
-            const usageHours = data.map((item) => item.usageHours);
-            const performanceScores = data.map((item) => item.performanceScore);
-            const activityBreakdown = data.map(
-              (item) => item.activityBreakdown
-            );
-
-            const training = activityBreakdown.map((item) => item.training);
-            const testing = activityBreakdown.map((item) => item.testing);
-            const idle = activityBreakdown.map((item) => item.idle);
+            const collections = Object.keys(data); // ["Computer_Security", "History", "Social_Science"]
+            const totalCounts = collections.map((collection) => data[collection].total);
+            const accuracyRates = collections.map((collection) => data[collection].accuracy);
+            const unansweredCounts = collections.map((collection) => data[collection].unanswered);
 
             // Create Chart 1: Bar Chart
             const ctx1 = document.getElementById("chart1").getContext("2d");
-            new Chart(ctx1, {
-              type: "bar",
-              data: {
-                labels: months,
-                datasets: [
-                  {
-                    label: "Monthly Usage (hrs)",
-                    data: usageHours,
-                    backgroundColor: "rgba(75, 192, 192, 0.2)",
-                    borderColor: "rgba(75, 192, 192, 1)",
-                    borderWidth: 1,
-                  },
-                ],
-              },
-              options: {
-                responsive: true,
-                plugins: {
-                  legend: { position: "top" },
-                  title: { display: true, text: "Monthly Usage" },
-                },
-              },
-            });
-
+    new Chart(ctx1, {
+      type: "bar",
+      data: {
+        labels: collections,
+        datasets: [
+          {
+            label: "Total Questions",
+            data: totalCounts,
+            backgroundColor: "rgba(75, 192, 192, 0.2)",
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: "top" },
+          title: { display: true, text: "Total Questions by Category" },
+        },
+      },
+    });
             // Create Chart 2: Line Chart
-            const ctx2 = document.getElementById("chart2").getContext("2d");
-            new Chart(ctx2, {
-              type: "line",
-              data: {
-                labels: months,
-                datasets: [
-                  {
-                    label: "Performance Score",
-                    data: performanceScores,
-                    borderColor: "rgba(255, 99, 132, 1)",
-                    tension: 0.4,
-                    fill: false,
-                  },
-                ],
-              },
-              options: {
-                responsive: true,
-                plugins: {
-                  legend: { position: "top" },
-                  title: { display: true, text: "Performance Trends" },
-                },
-              },
-            });
+          const ctx2 = document.getElementById("chart2").getContext("2d");
+    new Chart(ctx2, {
+      type: "line",
+      data: {
+        labels: collections,
+        datasets: [
+          {
+            label: "Accuracy Rate (%)",
+            data: accuracyRates,
+            borderColor: "rgba(255, 99, 132, 1)",
+            tension: 0.4,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: "top" },
+          title: { display: true, text: "Accuracy Rates by Category" },
+        },
+      },
+    });
 
             // Create Chart 3: Pie Chart
-            const ctx3 = document.getElementById("chart3").getContext("2d");
-            new Chart(ctx3, {
-              type: "pie",
-              data: {
-                labels: ["Training", "Testing", "Idle"],
-                datasets: [
-                  {
-                    data: [
-                      training.reduce((a, b) => a + b, 0),
-                      testing.reduce((a, b) => a + b, 0),
-                      idle.reduce((a, b) => a + b, 0),
-                    ],
-                    backgroundColor: [
-                      "rgba(255, 206, 86, 0.2)",
-                      "rgba(54, 162, 235, 0.2)",
-                      "rgba(255, 99, 132, 0.2)",
-                    ],
-                    borderColor: [
-                      "rgba(255, 206, 86, 1)",
-                      "rgba(54, 162, 235, 1)",
-                      "rgba(255, 99, 132, 1)",
-                    ],
-                    borderWidth: 1,
-                  },
-                ],
-              },
-              options: {
-                responsive: true,
-                plugins: {
-                  legend: { position: "top" },
-                  title: { display: true, text: "Activity Breakdown" },
-                },
-              },
-            });
+             const ctx3 = document.getElementById("chart3").getContext("2d");
+    new Chart(ctx3, {
+      type: "pie",
+      data: {
+        labels: collections,
+        datasets: [
+          {
+            data: unansweredCounts,
+            backgroundColor: ["rgba(255, 206, 86, 0.2)", "rgba(54, 162, 235, 0.2)", "rgba(255, 99, 132, 0.2)"],
+            borderColor: ["rgba(255, 206, 86, 1)", "rgba(54, 162, 235, 1)", "rgba(255, 99, 132, 1)"],
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: "top" },
+          title: { display: true, text: "Unanswered Questions by Category" },
+        },
+      },
+    });
           }
 
           // Fetch data and render charts on page load
