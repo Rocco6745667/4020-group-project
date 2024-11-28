@@ -15,7 +15,7 @@ connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .catch((err) => console.error("Failed to connect to MongoDB:", err));
 
 // Define a Mongoose schema and model for demonstration
-const QuestionSchema = new Schema({
+const QuestionSchema = new mongoose.Schema({
   question: String,
   options: {
     A: String,
@@ -27,7 +27,10 @@ const QuestionSchema = new Schema({
   chatGPTResponse: { type: String, default: "" },
 });
 
-const Question = model("Question", QuestionSchema);
+// Models for specific collections
+const ComputerSecurity = mongoose.model("ComputerSecurity", QuestionSchema, "computer_security");
+const History = mongoose.model("History", QuestionSchema, "history");
+const SocialScience = mongoose.model("SocialScience", QuestionSchema, "social_science");
 
 // Serve static files from the "public" directory
 app.use(static(join(__dirname, "public")));
@@ -214,24 +217,62 @@ async function fetchChartData() {
 // API to fetch a random question
 app.get("/api/random-question", async (req, res) => {
   try {
-    const count = await Question.countDocuments(); // Get total number of questions
-    const randomIndex = Math.floor(Math.random() * count); // Pick a random index
-    const question = await Question.findOne().skip(randomIndex); // Skip to that index
+    // Choose a collection randomly
+    const collections = [ComputerSecurity, History, SocialScience];
+    const randomCollection = collections[Math.floor(Math.random() * collections.length)];
+
+    // Get the total count of documents in the selected collection
+    const count = await randomCollection.countDocuments();
+    if (count === 0) {
+      return res.status(404).json({ error: "No questions available in the selected collection." });
+    }
+
+    // Fetch a random document
+    const randomIndex = Math.floor(Math.random() * count);
+    const question = await randomCollection.findOne().skip(randomIndex);
+
     res.json(question);
   } catch (error) {
-    res.status(500).json({ error: "Failed to retrieve question" });
+    console.error("Error fetching random question:", error);
+    res.status(500).json({ error: "Failed to retrieve random question" });
   }
 });
 
+
 // API to fetch a sequential question
-let currentQuestionIndex = 0;
+// Track current indices for each collection
+let currentIndices = {
+  computer_security: 0,
+  history: 0,
+  social_science: 0,
+};
+
 app.get("/api/sequential-question", async (req, res) => {
   try {
-    const count = await Question.countDocuments(); // Get total number of questions
-    const question = await Question.findOne().skip(currentQuestionIndex); // Skip to the current index
-    currentQuestionIndex = (currentQuestionIndex + 1) % count; // Move to the next question
+    const collections = {
+      computer_security: ComputerSecurity,
+      history: History,
+      social_science: SocialScience,
+    };
+
+    // Choose a collection sequentially (for simplicity, always "computer_security" here)
+    const collectionName = "computer_security"; // Change dynamically as needed
+    const model = collections[collectionName];
+
+    const count = await model.countDocuments();
+    if (count === 0) {
+      return res.status(404).json({ error: `No questions available in ${collectionName}.` });
+    }
+
+    // Fetch the document at the current index
+    const question = await model.findOne().skip(currentIndices[collectionName]);
+
+    // Update the index for the collection
+    currentIndices[collectionName] = (currentIndices[collectionName] + 1) % count;
+
     res.json(question);
   } catch (error) {
-    res.status(500).json({ error: "Failed to retrieve question" });
+    console.error("Error fetching sequential question:", error);
+    res.status(500).json({ error: "Failed to retrieve sequential question" });
   }
 });
