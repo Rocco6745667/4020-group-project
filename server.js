@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const app = express();
 
 // Middleware for parsing JSON
-app.use(json());
+app.use(express.json());
 
 // Connect to MongoDB
 const mongoURI =
