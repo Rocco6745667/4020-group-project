@@ -67,7 +67,7 @@ app.get("/api/chart-data", async (req, res) => {
     for (const collectionName of collections) {
       const collection = mongoose.connection.collection(collectionName);
       const total = await collection.countDocuments();
-      const correct = await collection.countDocuments({ correctAnswer: { $exists: true, $ne: "" }, chatGPTResponse: { $eq: correctAnswer } });
+      const correct = await collection.countDocuments({ correctAnswer: { $exists: true, $ne: "" }, chatGPTResponse: { $eq: "$correctAnswer" } });
       const unanswered = await collection.countDocuments({ chatGPTResponse: { $eq: "" } });
       stats[collectionName] = {
         total,
