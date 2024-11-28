@@ -5,18 +5,17 @@ const mongoose = require("mongoose");
 const app = express();
 
 // Middleware for parsing JSON
-app.use(express.json());
+app.use(json());
 
 // Connect to MongoDB
 const mongoURI =
   "mongodb+srv://abmbz13:estarossa@cluster0.duuc1.mongodb.net/ChatGPT_Evaluation?retryWrites=true&w=majority"; // Replace with your connection string
-mongoose
-  .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Failed to connect to MongoDB:", err));
 
 // Define a Mongoose schema and model for demonstration
-const QuestionSchema = new mongoose.Schema({
+const QuestionSchema = new Schema({
   question: String,
   options: {
     A: String,
@@ -28,22 +27,22 @@ const QuestionSchema = new mongoose.Schema({
   chatGPTResponse: { type: String, default: "" },
 });
 
-const Question = mongoose.model("Question", QuestionSchema);
+const Question = model("Question", QuestionSchema);
 
 // Serve static files from the "public" directory
-app.use(express.static(path.join(__dirname, "public")));
+app.use(static(join(__dirname, "public")));
 
 // Routes
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(join(__dirname, "public", "index.html"));
 });
 
 app.get("/profiles", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "profiles.html"));
+  res.sendFile(join(__dirname, "public", "profiles.html"));
 });
 
 app.get("/ChatGPT", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "ChatGPT.html"));
+  res.sendFile(join(__dirname, "public", "ChatGPT.html"));
 });
 
 // API route to interact with MongoDB
@@ -65,7 +64,7 @@ app.get("/api/chart-data", async (req, res) => {
     const stats = {};
 
     for (const collectionName of collections) {
-      const collection = mongoose.connection.collection(collectionName);
+      const collection = connection.collection(collectionName);
       const total = await collection.countDocuments();
       const correct = await collection.countDocuments({
         correctAnswer: { $exists: true, $ne: "" },
@@ -201,7 +200,7 @@ async function fetchChartData() {
 }
 
 // Fetch data and render charts on page load
-document.addEventListener("DOMContentLoaded", fetchChartData);
+//document.addEventListener("DOMContentLoaded", fetchChartData);
 
 // Define a Mongoose schema for questions
 //const QuestionSchema = new mongoose.Schema({
