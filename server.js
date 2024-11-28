@@ -10,7 +10,7 @@ app.use(express.json());
 // Connect to MongoDB
 const mongoURI =
   "mongodb+srv://abmbz13:estarossa@cluster0.duuc1.mongodb.net/ChatGPT_Evaluation?retryWrites=true&w=majority"; // Replace with your connection string
-connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Failed to connect to MongoDB:", err));
 
@@ -33,11 +33,9 @@ const History = mongoose.model("History", QuestionSchema, "history");
 const SocialScience = mongoose.model("SocialScience", QuestionSchema, "social_science");
 
 // Serve static files from the "public" directory
-app.use(static(join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public")));
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
-// Routes
-app.get("/", (req, res) => {
-  res.sendFile(join(__dirname, "public", "index.html"));
 });
 
 app.get("/profiles", (req, res) => {
@@ -71,7 +69,7 @@ app.get("/api/chart-data", async (req, res) => {
       const total = await collection.countDocuments();
       const correct = await collection.countDocuments({
         correctAnswer: { $exists: true, $ne: "" },
-        chatGPTResponse: { $eq: "$correctAnswer" },
+        chatGPTResponse: { $expr: { $eq: ["$chatGPTResponse", "$correctAnswer"] } },
       });
       const unanswered = await collection.countDocuments({
         chatGPTResponse: { $eq: "" },
