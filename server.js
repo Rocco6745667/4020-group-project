@@ -67,8 +67,13 @@ app.get("/api/chart-data", async (req, res) => {
     for (const collectionName of collections) {
       const collection = mongoose.connection.collection(collectionName);
       const total = await collection.countDocuments();
-      const correct = await collection.countDocuments({ correctAnswer: { $exists: true, $ne: "" }, chatGPTResponse: { $eq: "$correctAnswer" } });
-      const unanswered = await collection.countDocuments({ chatGPTResponse: { $eq: "" } });
+      const correct = await collection.countDocuments({
+        correctAnswer: { $exists: true, $ne: "" },
+        chatGPTResponse: { $eq: "$correctAnswer" },
+      });
+      const unanswered = await collection.countDocuments({
+        chatGPTResponse: { $eq: "" },
+      });
       stats[collectionName] = {
         total,
         correct,
@@ -102,8 +107,12 @@ async function fetchChartData() {
     // Extract data for charts
     const collections = Object.keys(data);
     const totalCounts = collections.map((collection) => data[collection].total);
-    const accuracyRates = collections.map((collection) => data[collection].accuracy);
-    const unansweredCounts = collections.map((collection) => data[collection].unanswered);
+    const accuracyRates = collections.map(
+      (collection) => data[collection].accuracy
+    );
+    const unansweredCounts = collections.map(
+      (collection) => data[collection].unanswered
+    );
 
     // Create Chart 1: Bar Chart for Monthly Usage
     const ctx1 = document.getElementById("chart1").getContext("2d");
@@ -191,18 +200,17 @@ async function fetchChartData() {
   }
 }
 
-
 // Fetch data and render charts on page load
 document.addEventListener("DOMContentLoaded", fetchChartData);
 
 // Define a Mongoose schema for questions
-const QuestionSchema = new mongoose.Schema({
-  questionText: String,
-  category: String,
-  difficulty: String,
-});
+//const QuestionSchema = new mongoose.Schema({
+//questionText: String,
+//category: String,
+//difficulty: String,
+//});
 
-const Question = mongoose.model("Question", QuestionSchema);
+//const Question = mongoose.model("Question", QuestionSchema);
 
 // API to fetch a random question
 app.get("/api/random-question", async (req, res) => {
