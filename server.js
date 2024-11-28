@@ -38,7 +38,7 @@ app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.ht
 
 
 app.get("/profiles", (req, res) => {
-  res.sendFile(join(__dirname, "public", "profiles.html"));
+  res.sendFile(path.join(__dirname, "public", "profiles.html"));
 });
 
 app.get("/ChatGPT", (req, res) => {
